@@ -39,6 +39,24 @@ impl<T> ApiResponse<T> where T: Response {
         Ok(response)
     }
 
+    pub fn new(response: T) -> ApiResponse<T> {
+        ApiResponse {
+            success: true,
+            error: ApiError::NoError,
+            status: Status::new(StatusCode::Ok),
+            response
+        }
+    }
+
+    pub fn with_status(response: T, status: Status) -> ApiResponse<T> {
+       ApiResponse {
+            success: true,
+            error: ApiError::NoError,
+            status,
+            response
+        }
+    }
+
     pub fn from_err(error: ApiError) -> ApiResponse<T> {
         let status = match error {
             ApiError::InternalServerError => Status::new(StatusCode::InternalServerError),

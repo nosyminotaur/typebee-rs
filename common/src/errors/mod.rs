@@ -1,34 +1,28 @@
-use serde::{ Serialize };
-use std::fmt;
+use serde::{ Serialize, Serializer, ser::SerializeStruct };
 
 pub mod db;
 pub mod user;
 
 //centralized error type.
-#[derive(Serialize, Debug, Clone, Copy)]
+#[derive(Debug)]
 pub enum ApiError {
     DbError,
     AuthError,
-    //Must be used for handling all errors that shouldn't be sent
-    //to the user
-    InternalServerError
+    InternalServerError,
+    //for default errors
+    //gets removed because success is false (custom Serialize)
+    NoError
 }
 
-impl fmt::Display for ApiError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        //improve all the matches to use inner Error Object's description
-        //instead of string
-        match self {
-            ApiError::AuthError => write!(f, "Authentication Error"),
-            ApiError::DbError => write!(f, "Database Error"),
-            ApiError::InternalServerError => write!(f, "Internal Server Error")
-        }
-    }
-}
-
-//return a 500 response because we don't want
-impl From<serde_json::error::Error> for ApiError {
-    fn from(_err: serde_json::error::Error) -> ApiError {
-        ApiError::InternalServerError
+//TODO - to use inner error later on
+impl Serialize for ApiError {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+        let mut state = serializer.serialize_struct("Error", 4)?;
+        let error = match self {
+            ApiError::AuthError => "Authentication Error",
+            _ => "Internal Server Error"
+        };
+        state.serialize_field("error", error)?;
+        state.end()
     }
 }

@@ -1,10 +1,9 @@
 extern crate actix_web;
 use actix_web::{web, HttpRequest, Responder, Error, guard};
-use common::{ ApiResponse, Response};
-use common::errors::ApiError;
+use common::{ ApiResponse, Status, StatusCode};
 use common::models::user::{LoginRequest, LoginResponse, UserClaims};
 use futures::future::{ok, Future};
-// use jsonwebtoken::{Header, encode};
+use jsonwebtoken::{Header, encode};
 
 fn login(user_info: web::Json<LoginRequest>, _req: HttpRequest) -> Box<dyn Future<Item = impl Responder, Error = Error>> {
     let claims = UserClaims {
@@ -12,8 +11,12 @@ fn login(user_info: web::Json<LoginRequest>, _req: HttpRequest) -> Box<dyn Futur
         username: user_info.username.clone()
     };
 
+    let login_response = LoginResponse {
+            jwt: encode(&Header::default(), &claims, "hjsdnfkjnsfjsbfjnsjflbdsjlfbjlljdbq09ualsfn;nalwjbeojabc".as_ref()).unwrap()
+    };
+
     Box::new(ok::<ApiResponse<LoginResponse>, Error>(
-        LoginResponse::from_error(ApiError::InternalServerError)
+        ApiResponse::with_status(login_response, Status::new(StatusCode::Timeout))
     ))
 }
 
