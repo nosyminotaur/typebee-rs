@@ -14,7 +14,7 @@ pub struct ApiResponse<T: Response + ?Sized> {
 
 pub trait Response: Serialize {
     //creates a new response with success as false
-    //Serialze added because serde is used to convert to json
+    //Serialize added because serde is used to convert to json
     fn from_error(error: ApiError) -> ApiResponse<Self>;
     //returns an empty Object that can be returned safely for failures
     fn default() -> Self;

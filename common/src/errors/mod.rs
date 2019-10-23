@@ -1,16 +1,13 @@
 use serde::{ Serialize, Serializer, ser::SerializeStruct };
 
-pub mod db;
 pub mod user;
 
 //centralized error type.
 #[derive(Debug)]
 pub enum ApiError {
-    DbError,
     AuthError,
     InternalServerError,
-    //for default errors
-    //gets removed because success is false (custom Serialize)
+    //to return no error (default response for no error)
     NoError
 }
 
@@ -20,6 +17,7 @@ impl Serialize for ApiError {
         let mut state = serializer.serialize_struct("Error", 4)?;
         let error = match self {
             ApiError::AuthError => "Authentication Error",
+            ApiError::NoError => "No Error",
             _ => "Internal Server Error"
         };
         state.serialize_field("error", error)?;
